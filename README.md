@@ -3,10 +3,11 @@
 ## 1. Общее описание
 
 Инструмент командной строки преобразует текст на учебном конфигурационном языке в XML.
-Текст читается из стандартного ввода. Синтаксические ошибки выявляются с указанием
-строки и столбца. Разбор выполняется с помощью библиотеки Lark (генератор парсеров).
+Текст читается из стандартного ввода, результат записывается в файл, путь к которому задан ключом `-o`.
+Синтаксические ошибки выявляются с указанием строки и столбца.
+Разбор выполняется с помощью библиотеки Lark (генератор парсеров).
 
-Состояние проекта: реализован этап 4 - проверка ошибок.
+Состояние проекта: реализованы все 5 этапов (грамматика, XML, константы, проверка ошибок, примеры).
 
 ## 2. Описание функций и настроек
 
@@ -25,8 +26,9 @@
 
 ```
 {- настройки сервера -}
+(def port 8080)
 @{
-  port = 8080;
+  port = $[port];
   limits = @{ min = 1; max = -1; };
 }
 ```
@@ -37,13 +39,13 @@
 - `src/config_parser.py` - разбор текста, ошибка `ConfigSyntaxError` с позицией;
 - `src/config_transformer.py` - превращает дерево разбора в числа и словари Python и вычисляет константы;
 - `src/xml_writer.py` - строит XML и записывает его в файл;
-- `src/main.py` - точка входа: читает stdin, переводит текст в XML, записывает файл по ключу `-o`;
 - `src/errors.py` - классы ошибок трансляции;
-- `src/translator.py` - разбор текста и вычисление констант.
+- `src/translator.py` - разбор текста и вычисление констант;
+- `src/main.py` - точка входа: читает stdin, переводит текст в XML, записывает файл по ключу `-o`.
 
 ### Параметры командной строки
 
-- `-o`, `--output` — путь к выходному XML-файлу (обязательный). Недостающие папки создаются.
+- `-o`, `--output` - путь к выходному XML-файлу (обязательный). Недостающие папки создаются.
 - Текст конфигурации читается из стандартного ввода.
 
 ### Формат XML
@@ -71,8 +73,8 @@ py -m pip install -r requirements.txt
 Запуск (Windows и Git Bash):
 
 ```
-run.bat -o out\result.xml < tests\examples\basic.conf
-bash run.sh -o out/result.xml < tests/examples/basic.conf
+run.bat -o out\result.xml < tests\examples\server.conf
+bash run.sh -o out/result.xml < tests/examples/server.conf
 ```
 
 Тесты:
@@ -81,63 +83,89 @@ bash run.sh -o out/result.xml < tests/examples/basic.conf
 py -m unittest discover -s tests -v
 ```
 
+Скрипты демонстрации:
+
+```
+tests\run_examples.bat (или bash tests/run_examples.sh) - три примера конфигураций
+tests\run_errors.bat (или bash tests/run_errors.sh) - примеры ошибок
+```
+
 ## 4. Примеры использования
 
-```
-$ bash run.sh -o out/result.xml < tests/examples/basic.conf 
-Результат записан в out/result.xml
-$ cat out/result.xml 
-<?xml version='1.0' encoding='utf-8'?>
-<config>
-  <dict>
-    <entry name="port">
-      <number>8080</number>
-    </entry>
-    <entry name="host">
-      <dict>
-        <entry name="a">
-          <number>127</number>
-        </entry>
-        <entry name="b">
-          <number>-1</number>
-        </entry>
-      </dict>
-    </entry>
-  </dict>
-</config>
-```
+### Примеры из разных областей
+
+- `tests/examples/server.conf` - настройки веб-сервера;
+- `tests/examples/game.conf` - параметры компьютерной игры;
+- `tests/examples/home.conf` - умный дом (температура и освещение по комнатам).
+
+Пример `server.conf`:
 
 ```
-$ bash run.sh -o out/constants.xml < tests/examples/constants.conf
-Результат записан в out/constants.xml
-$ cat out/constants.xml 
+{- Конфигурация веб-сервера -}
+(def http 80)
+(def timeout 30)
+(def retries 3)
+
+@{
+  server = @{
+    port = $[http];
+    workers = 4;
+    timeout = $[timeout];
+  };
+  proxy = @{
+    port = 8080;
+    timeout = $[timeout];
+    retries = $[retries];
+  };
+  limits = @{
+    connections = 1000;
+    uploadmb = 25;
+  };
+}
+```
+
+Результат:
+
+```
+$ bash run.sh -o out/server.xml < tests/examples/server.conf
+Результат записан в out/server.xml
+$ cat out/server.xml
 <?xml version='1.0' encoding='utf-8'?>
 <config>
   <dict>
     <entry name="server">
       <dict>
         <entry name="port">
+          <number>80</number>
+        </entry>
+        <entry name="workers">
+          <number>4</number>
+        </entry>
+        <entry name="timeout">
+          <number>30</number>
+        </entry>
+      </dict>
+    </entry>
+    <entry name="proxy">
+      <dict>
+        <entry name="port">
           <number>8080</number>
+        </entry>
+        <entry name="timeout">
+          <number>30</number>
+        </entry>
+        <entry name="retries">
+          <number>3</number>
         </entry>
       </dict>
     </entry>
     <entry name="limits">
       <dict>
-        <entry name="min">
-          <number>1</number>
+        <entry name="connections">
+          <number>1000</number>
         </entry>
-        <entry name="max">
-          <number>10</number>
-        </entry>
-      </dict>
-    </entry>
-    <entry name="backup">
-      <dict>
-        <entry name="min">
-          <number>1</number>
-        </entry>
-        <entry name="max">
-          <number>10</number>
+        <entry name="uploadmb">
+          <number>25</number>
         </entry>
       </dict>
     </entry>
@@ -145,7 +173,9 @@ $ cat out/constants.xml
 </config>
 ```
 
-Ошибки имён:
+### Ошибки
+
+Ошибки имен:
 
 ```
 $ echo '$[port]' | bash run.sh -o out/e.xml
@@ -156,11 +186,11 @@ $ printf '@{\n  a = 1;\n  a = 2;\n}' | bash run.sh -o out/e.xml
 Строка 3: ключ 'a' повторяется в словаре
 ```
 
-Синтаксическая ошибка (файл `tests/examples/broken.conf`):
+Синтаксическая ошибка (файл `tests/errors/nosemicolon.conf`):
 
 ```
-$ bash run.sh -o out/x.xml < tests/examples/broken.conf
-Синтаксическая ошибка: строка 6, столбец 13
-        a = ;
-            ^
+$ bash run.sh -o out/e.xml < tests/errors/nosemicolon.conf
+Синтаксическая ошибка: строка 1, столбец 10
+@{ a = 1 }
+         ^
 ```
