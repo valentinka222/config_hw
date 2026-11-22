@@ -1,15 +1,21 @@
 """Грамматика учебного конфигурационного языка для Lark."""
 
 GRAMMAR = r"""
-start: value
+start: definition* value
+
+definition: "(" _DEF NAME value ")"
 
 ?value: NUMBER
       | dict
+      | reference
 
 dict: "@{" entry* "}"
 
 entry: NAME "=" value ";"
 
+reference: "$[" NAME "]"
+
+_DEF: /def(?![a-z])/
 NAME: /[a-z]+/
 NUMBER: /[+-]?([1-9][0-9]*|0)/
 COMMENT: /\{-[\s\S]*?-\}/

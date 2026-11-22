@@ -3,12 +3,8 @@
 from lark import Lark, Tree
 from lark.exceptions import UnexpectedInput
 
+from errors import ConfigSyntaxError
 from grammar import GRAMMAR
-
-
-class ConfigSyntaxError(Exception):
-    """Синтаксическая ошибка во входном тексте."""
-
 
 PARSER = Lark(GRAMMAR, parser="lalr")
 

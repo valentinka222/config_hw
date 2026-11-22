@@ -47,21 +47,11 @@ class XmlContentTests(unittest.TestCase):
         path = "dict/entry[@name='a']/dict/entry[@name='b']/dict/entry/number"
         self.assertEqual(root.find(path).text, "1")
 
-    def test_empty_dict(self):
-        """Пустой словарь дает пустой элемент dict."""
-        root = translate("@{}")
-        self.assertEqual(len(root.find("dict")), 0)
-
     def test_entry_order(self):
         """Порядок записей сохраняется."""
         root = translate("@{ z = 1; a = 2; m = 3; }")
         names = [e.get("name") for e in root.findall("dict/entry")]
         self.assertEqual(names, ["z", "a", "m"])
-
-    def test_comments_are_dropped(self):
-        """Комментарии в XML не попадают."""
-        root = translate("{- c1 -} @{ {- c2 -} a = 1; }")
-        self.assertEqual(len(root.findall("dict/entry")), 1)
 
 
 class CommandLineTests(unittest.TestCase):

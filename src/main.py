@@ -3,8 +3,8 @@
 import argparse
 import sys
 
-from config_parser import ConfigSyntaxError, parse
-from config_transformer import ConfigTransformer
+from errors import ConfigError
+from translator import translate
 from xml_writer import write_xml
 
 
@@ -39,9 +39,9 @@ def main() -> int:
     setup_streams()
     text = sys.stdin.read()
     try:
-        value = ConfigTransformer().transform(parse(text))
+        value = translate(text)
         write_xml(value, args.output)
-    except ConfigSyntaxError as error:
+    except ConfigError as error:
         print(error)
         return 1
     except OSError as error:
