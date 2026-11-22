@@ -6,7 +6,7 @@ from lark.exceptions import UnexpectedInput
 from errors import ConfigSyntaxError
 from grammar import GRAMMAR
 
-PARSER = Lark(GRAMMAR, parser="lalr")
+PARSER = Lark(GRAMMAR, parser="lalr", propagate_positions=True)
 
 
 def parse(text: str) -> Tree:

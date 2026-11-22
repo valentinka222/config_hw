@@ -21,6 +21,11 @@ VALID_CASES = [
     ("(def v 7) @{ a = @{ b = $[v]; }; }", {"a": {"b": 7}}),
     ("{- c -}\n(  def   x   -3 )\n$[ x ]", -3),
     ("@{ def = 1; }", {"def": 1}),
+    ("(def a @{ b = @{ c = 1; }; }) @{ x = $[a]; y = @{ z = $[a]; }; }",
+     {"x": {"b": {"c": 1}}, "y": {"z": {"b": {"c": 1}}}}),
+    ("(def x {- c -} 5 {- d -}) $[x]", 5),
+    ("@{ a = @{ k = 1; }; b = @{ k = 2; }; }",
+     {"a": {"k": 1}, "b": {"k": 2}}),
 ]
 
 UNDEFINED_CASES = [
@@ -36,6 +41,12 @@ SYNTAX_CASES = [
     "@{ (def x 1); }",
     "$[x",
     "5 (def x 1)",
+]
+
+DUPLICATE_CASES = [
+    "(def x 1) (def x 2) 3",
+    "@{ a = 1; a = 2; }",
+    "@{ a = @{ b = 1; b = 2; }; }",
 ]
 
 
@@ -61,6 +72,26 @@ class ConstantTests(unittest.TestCase):
             with self.subTest(text=text):
                 with self.assertRaises(ConfigSyntaxError):
                     translate(text)
+
+    def test_duplicates(self):
+        """Повторное объявление и повтор ключа дают ConfigNameError."""
+        for text in DUPLICATE_CASES:
+            with self.subTest(text=text):
+                with self.assertRaises(ConfigNameError):
+                    translate(text)
+
+    def test_name_errors_have_line(self):
+        """Ошибки имен содержат номер строки."""
+        cases = [
+            ("\n\n$[x]", "Строка 3"),
+            ("(def a 1)\n(def a 2)\n3", "Строка 2"),
+            ("@{\n  a = 1;\n  a = 2;\n}", "Строка 3"),
+        ]
+        for text, expected in cases:
+            with self.subTest(text=text):
+                with self.assertRaises(ConfigNameError) as context:
+                    translate(text)
+                self.assertIn(expected, str(context.exception))
 
 
 if __name__ == "__main__":

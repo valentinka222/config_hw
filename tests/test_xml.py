@@ -82,6 +82,15 @@ class CommandLineTests(unittest.TestCase):
             self.assertIn("Синтаксическая ошибка", result.stdout)
             self.assertFalse(path.exists())
 
+    def test_name_error(self):
+        """Необъявленная константа: код 1, сообщение, файла нет."""
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "result.xml"
+            result = self.run_tool("$[x]", "-o", str(path))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("не объявлена", result.stdout)
+            self.assertFalse(path.exists())
+
     def test_no_output_key(self):
         """Без ключа -o программа завершается с кодом 2."""
         result = self.run_tool("42")
