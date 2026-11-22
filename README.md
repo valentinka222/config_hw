@@ -6,8 +6,8 @@
 Текст читается из стандартного ввода. Синтаксические ошибки выявляются с указанием
 строки и столбца. Разбор выполняется с помощью библиотеки Lark (генератор парсеров).
 
-Состояние проекта: реализован этап 1 (грамматика и разбор чисел, словарей и комментариев).
-Генерация XML и константы будут добавлены на следующих этапах.
+Состояние проекта: реализован этап 2 (грамматика и трансляция в XML).
+Константы будут добавлены на следующем этапе.
 
 ## 2. Описание функций и настроек
 
@@ -33,7 +33,20 @@
 
 - `src/grammar.py` - грамматика языка для Lark;
 - `src/config_parser.py` - разбор текста, ошибка `ConfigSyntaxError` с позицией;
-- `src/main.py` - точка входа: читает stdin, разбирает текст, печатает дерево разбора.
+- `src/config_transformer.py` - превращает дерево разбора в числа и словари Python;
+- `src/xml_writer.py` - строит XML и записывает его в файл;
+- `src/main.py` - точка входа: читает stdin, переводит текст в XML, записывает файл по ключу `-o`.
+
+### Параметры командной строки
+
+- `-o`, `--output` — путь к выходному XML-файлу (обязательный). Недостающие папки создаются.
+- Текст конфигурации читается из стандартного ввода.
+
+### Формат XML
+
+- корневой элемент `<config>`;
+- число: `<number>8080</number>`;
+- словарь: `<dict>` с вложенными `<entry name="имя">значение</entry>`.
 
 ## 3. Команды сборки и запуска тестов
 
@@ -46,8 +59,8 @@ py -m pip install -r requirements.txt
 Запуск (Windows и Git Bash):
 
 ```
-run.bat < tests\examples\basic.conf
-bash run.sh < tests/examples/basic.conf
+run.bat -o out\result.xml < tests\examples\basic.conf
+bash run.sh -o out/result.xml < tests/examples/basic.conf
 ```
 
 Тесты:
@@ -59,27 +72,33 @@ py -m unittest discover -s tests -v
 ## 4. Примеры использования
 
 ```
-> bash run.sh < tests/examples/basic.conf
-start
-  dict
-    entry
-      port
-      8080
-    entry
-      host
-      dict
-        entry
-          a
-          127
-        entry
-          b
-          -1
+$ bash run.sh -o out/result.xml < tests/examples/basic.conf 
+Результат записан в out/result.xml
+$ cat out/result.xml 
+<?xml version='1.0' encoding='utf-8'?>
+<config>
+  <dict>
+    <entry name="port">
+      <number>8080</number>
+    </entry>
+    <entry name="host">
+      <dict>
+        <entry name="a">
+          <number>127</number>
+        </entry>
+        <entry name="b">
+          <number>-1</number>
+        </entry>
+      </dict>
+    </entry>
+  </dict>
+</config>
 ```
 
 Ошибка в тексте (`@{ a = ; }`):
 
 ```
-> bash run.sh < tests/examples/broken.conf
+$ bash run.sh -o out/x.xml < tests/examples/broken.conf
 Синтаксическая ошибка: строка 6, столбец 13
         a = ;
             ^
