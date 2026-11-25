@@ -6,8 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from errors import ConfigNameError, ConfigSyntaxError  # noqa: E402
-from translator import translate  # noqa: E402
+from errors import ConfigNameError, ConfigSyntaxError
+from translator import translate
 
 VALID_CASES = [
     ("(def x 5) $[x]", 5),

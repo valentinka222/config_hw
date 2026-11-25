@@ -1,10 +1,10 @@
 """Запись результата трансляции в XML-файл."""
 
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as e_t
 from pathlib import Path
 
 
-def build_element(value) -> ET.Element:
+def build_element(value) -> e_t.Element:
     """Строит XML-элемент для числа или словаря.
 
     Args:
@@ -14,12 +14,12 @@ def build_element(value) -> ET.Element:
         Элемент number или dict с вложенными элементами entry.
     """
     if isinstance(value, dict):
-        element = ET.Element("dict")
+        element = e_t.Element("dict")
         for name, item in value.items():
-            entry = ET.SubElement(element, "entry", name=name)
+            entry = e_t.SubElement(element, "entry", name=name)
             entry.append(build_element(item))
         return element
-    number = ET.Element("number")
+    number = e_t.Element("number")
     number.text = str(value)
     return number
 
@@ -34,11 +34,11 @@ def write_xml(value, path: str) -> None:
     Raises:
         OSError: если файл не удалось записать.
     """
-    root = ET.Element("config")
+    root = e_t.Element("config")
     root.append(build_element(value))
-    ET.indent(root)
+    e_t.indent(root)
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    ET.ElementTree(root).write(
+    e_t.ElementTree(root).write(
         str(target), encoding="utf-8", xml_declaration=True
     )

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from config_parser import ConfigSyntaxError, parse  # noqa: E402
+from config_parser import ConfigSyntaxError, parse
 
 VALID_TEXTS = [
     "0",

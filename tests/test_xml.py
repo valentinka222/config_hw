@@ -4,23 +4,23 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as e_t
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from config_parser import parse  # noqa: E402
-from config_transformer import ConfigTransformer  # noqa: E402
-from xml_writer import write_xml  # noqa: E402
+from config_parser import parse
+from config_transformer import ConfigTransformer
+from xml_writer import write_xml
 
 
-def translate(text: str) -> ET.Element:
+def translate(text: str) -> e_t.Element:
     """Переводит текст в XML-файл и возвращает корневой элемент."""
     with tempfile.TemporaryDirectory() as folder:
         path = Path(folder) / "result.xml"
         write_xml(ConfigTransformer().transform(parse(text)), str(path))
-        return ET.parse(path).getroot()
+        return e_t.parse(path).getroot()
 
 
 class XmlContentTests(unittest.TestCase):

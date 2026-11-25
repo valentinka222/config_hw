@@ -67,6 +67,6 @@ class ConfigTransformer(Transformer):
             result[name] = value
         return result
 
-    def NUMBER(self, token):
+    def number(self, items):
         """Число из текста токена."""
-        return int(token)
+        return int(items[0])

@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from translator import translate  # noqa: E402
+from translator import translate
 
 EXAMPLES = ROOT / "tests" / "examples"
 

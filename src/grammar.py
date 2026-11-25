@@ -5,9 +5,11 @@ start: definition* value
 
 definition: "(" _DEF NAME value ")"
 
-?value: NUMBER
+?value: number
       | dict
       | reference
+
+number: NUMBER
 
 dict: "@{" entry* "}"
 
